@@ -1,4 +1,7 @@
 using UnityEngine;
+using System;
+using System.Collections.Generic;
+
 
 public class BallController : MonoBehaviour
 {
@@ -6,11 +9,27 @@ public class BallController : MonoBehaviour
     [SerializeField] private Rigidbody sphereRigidbody;
     [SerializeField] float ballSpeed = 2f;
 
+    public List <string> currentCollisions = new List <string> ();
+	
+	void OnCollisionEnter (Collision col) {
+
+		// Add the GameObject collided with to the list.
+		currentCollisions.Add (col.gameObject.name);
+        Debug.Log("Sphere is colliding the plane");
+	}
+
+	void OnCollisionExit (Collision col) {
+		// Remove the GameObject collided with from the list.
+		currentCollisions.Remove (col.gameObject.name);
+        Debug.Log("Sphere is off the plane");
+	}
+
     public void MoveBall(Vector2 input)
     {
         Vector3 inputXZPlane = new(input.x, 0, input.y);
         sphereRigidbody.AddForce(inputXZPlane * ballSpeed);
     }
+
     void Start()
     {
         Debug.Log("Calling the Start method");
@@ -20,6 +39,7 @@ public class BallController : MonoBehaviour
     void Update()
     {
         Vector2 inputVector = Vector2.zero; // Initiaize our input vector
+        Vector3 inputJumpVector = Vector3.zero;
         
         if (Input.GetKey(KeyCode.W)) // W key presed
         {
@@ -44,7 +64,12 @@ public class BallController : MonoBehaviour
             inputVector += Vector2.right;
         }
 
-        Vector3 inputXZPlane = new Vector3(inputVector.x, 0, inputVector.y);
-        sphereRigidbody.AddForce(inputXZPlane);
+        if (Input.GetKey(KeyCode.Space) & currentCollisions.Contains("Plane"))
+        {
+            inputJumpVector += 10*Vector3.up;
+        }
+
+        Vector3 inputXYZPlane = new Vector3(inputVector.x, inputJumpVector.y, inputVector.y);
+        sphereRigidbody.AddForce(inputXYZPlane);
     }
 }
